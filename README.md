@@ -11,8 +11,9 @@ I denne øvelse skal du bygge en app til dine bøger, appen kan:
 ## Start med the basic
 
 Lav din app
-````
+```
 npx create-expo-app bookbuddy --template blank
+```
 
 
 Download de nødvendige dependencies 
