@@ -13,9 +13,10 @@ I denne øvelse skal du bygge en app til dine bøger, appen kan:
 Lav din app
 ````
 npx create-expo-app bookbuddy --template blank
-```
+
 
 Download de nødvendige dependencies 
+
 ````
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
