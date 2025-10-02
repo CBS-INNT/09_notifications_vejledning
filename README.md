@@ -704,7 +704,9 @@ const styles = StyleSheet.create({
 - Import BookCard fra Sharing.js
 - Indsæt dette `renderItem={({ item, index }) => <BookCard item={item} index={index} />}` i din FlatList
 
+Test din app
 
+# Tillykke du er færdig 
 
 
 
