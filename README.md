@@ -41,11 +41,16 @@ Download de nødvendige dependencies
   },
 ```
 
+Kør 
+```
+npx expo customize babel.config.js
+```
+
 Opret dine mapper med de nødvendige filer 
 - components
   - Library.js
   - Notifications.js
-  - Sharing
+  - Sharing.js
 - screens
   - CameraScreen.js
   - HomeScreen.js
@@ -53,14 +58,14 @@ Opret dine mapper med de nødvendige filer
 
 ## App.js
 
-Lav din navigation i app.js
+Lav din navigation i app.js med en stack skærm
 
 ```
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import HomeScreen from './screens/HomeScreen';
+import HomeScreen from '/*indsæt sti*/';
 
 const Stack = createNativeStackNavigator();
 
@@ -93,8 +98,12 @@ export default function HomeScreen({ navigation }) {
     </View>
   );
 }
+```
 
-const styles = StyleSheet.create({
+Her er stylingen til HomeScreen, indsæt det i en seperat stylingsfil
+
+```
+const ?? = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fafafa', padding: 20 },
   title: { fontSize: 26, fontWeight: 'bold', marginBottom: 10 },
   subtitle: { fontSize: 16, color: '#555', marginBottom: 40 },
@@ -108,10 +117,10 @@ Test om det virker
 ## Tilføj kamera og AsyncStorage 
 
 ### Library.js
-Start med at lave Library, dette komponent styrer hvordan bøger gemmes og hentes lokalt
+Start med at lave Library, dette komponent styrer hvordan bøger gemmes og hentes lokalt.
 
 ```
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LIBRARY_KEY = 'BOOK_LIBRARY';
@@ -142,6 +151,11 @@ export async function addBook(localUri) {
   await AsyncStorage.setItem(LIBRARY_KEY, JSON.stringify(next));
   return book;
 }
+
+export async function getItem(id) {
+    const list = await listBooks();
+    return list.find((x) => x.id === id) || null;
+  }
 ```
 
 ### CameraScreen.js
@@ -151,7 +165,7 @@ Skal vise et simpelt kamera, hvor vi kan tage et billede af bogen.
 import React, { useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { addBook } from '../lib/library';
+import { addBook } from '/*indsæt stien her*/';
 
 export default function CameraScreen({ navigation }) {
   const [permission, requestPermission] = useCameraPermissions();
@@ -178,7 +192,7 @@ export default function CameraScreen({ navigation }) {
       setBusy(true);
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.9 });
       const saved = await addBook(photo.uri);
-      navigation.navigate('Home', { refresh: true });
+      navigation.goBack();
       setBusy(false);
     }
   };
@@ -192,8 +206,11 @@ export default function CameraScreen({ navigation }) {
     </View>
   );
 }
+```
 
-const styles = StyleSheet.create({
+Indsæt styligen i en seperat fil
+```
+const ??? = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   btn: { backgroundColor: '#333', padding: 12, borderRadius: 8, marginTop: 10 },
@@ -202,15 +219,15 @@ const styles = StyleSheet.create({
 });
 ```
 
-### HomeScreen.js
+### Opdater HomeScreen.js
 
+- Importer useEffect og useState
+- Importer FlatList
+- Importer listBooks fra Library
+
+indsæt følgende øverst i HomeScreen funktion:
 ```
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
-import { listBooks } from '../lib/library';
-
-export default function HomeScreen({ navigation }) {
-  const [books, setBooks] = useState([]);
+const [books, setBooks] = useState([]);
 
   const loadBooks = async () => {
     const data = await listBooks();
@@ -222,7 +239,10 @@ export default function HomeScreen({ navigation }) {
     const unsubscribe = navigation.addListener('focus', loadBooks);
     return unsubscribe; // rydder op når komponenten unmountes
   }, [navigation]);
+```
 
+Opdater din return:
+```
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Min læseliste</Text>
@@ -248,8 +268,12 @@ export default function HomeScreen({ navigation }) {
     </View>
   );
 }
+```
 
-const styles = StyleSheet.create({
+
+Opdater din styling
+```
+const ??? = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fafafa', padding: 10 },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
   card: { flex: 1, margin: 6, aspectRatio: 0.7, borderRadius: 10, overflow: 'hidden', backgroundColor: '#ddd' },
@@ -261,10 +285,11 @@ const styles = StyleSheet.create({
 
 ### App.js
 
-Importer kamera skærmen og indsæt den som en stack screen
+Importer kamera skærmen i app.js og indsæt den som en stack screen
 
 ## Notifikationer
 
+Indsæt dette i notifikation filen og opdater hvornår på dagen notifikationen skal komme 
 ```
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
@@ -291,7 +316,7 @@ export async function registerForPush() {
   return true;
 }
 
-// Planlæg en daglig notifikation kl 21:00
+// Planlæg en daglig notifikation
 export async function scheduleDailyReminder() {
   await Notifications.cancelAllScheduledNotificationsAsync(); // rydder gamle
   await Notifications.scheduleNotificationAsync({
@@ -299,21 +324,21 @@ export async function scheduleDailyReminder() {
       title: "BookBuddy",
       body: "Tid til at læse lidt i din bog!",
     },
-    trigger: { hour: 21, minute: 0, repeats: true },
+    trigger: { hour: ???, minute: ???, repeats: true },
   });
 }
-
 ```
 
 ## App.js
 Importer følgende i app.js
 
 ```
+import React, { useEffect } from 'react'; // vær opmærksom på at denne skal erstatte en anden
 import * as Notifications from 'expo-notifications';
-import CameraScreen from './screens/CameraScreen';
-import { registerForPush, scheduleDailyReminder } from './components/notifications';
+import { registerForPush, scheduleDailyReminder } from './components/Notifications';
 ```
 
+Indsæt dette under din stack konstant. Vær opmærksom på at der ikke kan være på App funktioner
 ```
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -357,16 +382,9 @@ export default function HomeScreen({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Image source={{ uri: item.uri }} style={styles.img} />
-      <Text style={styles.cardTitle}>Min bog #{item.id}</Text>
-    </View>
-  );
-
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>📚 Min læseliste</Text>
+      <Text style={styles.header}> Min læseliste</Text>
 
       {books.length === 0 ? (
         <View style={styles.empty}>
@@ -389,6 +407,8 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
+Opdater stylingen
+```
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB', padding: 10 },
   header: { fontSize: 28, fontWeight: 'bold', marginVertical: 20, textAlign: 'center', color: '#333' },
@@ -427,10 +447,11 @@ const styles = StyleSheet.create({
   },
   fabText: { fontSize: 30, color: '#fff', fontWeight: 'bold' },
 });
-```
+``
 
 ### Opdater CameraScreen.js
-Gør knapper lidt pænere
+Gør knappen lidt pænere
+
 ```
 <TouchableOpacity style={styles.shutter} onPress={takePhoto}>
   <Text style={styles.shutterIcon}></Text>
@@ -462,7 +483,7 @@ Test din app
 
 ## Brug reanimated 
 
-Indsæt dette i App.json
+Indsæt dette i App.json. Du kan læse mere om det her: https://docs.expo.dev/guides/using-hermes/ 
 ```
 {
   "expo": {
@@ -475,8 +496,6 @@ Indsæt dette i babel.config.js
 ```
 plugins: ['react-native-reanimated/plugin'],
 ```
-
-
 
 ### HomeScreen.js
 
@@ -493,18 +512,6 @@ import Animated, {
 ```
 
 ```
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
-import { listBooks } from '../components/library';
-import Animated, {
-  FadeInUp,
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
-
 // Pulsing FAB som separat komponent
 function PulsingFab({ onPress }) {
   const scale = useSharedValue(1);
@@ -561,7 +568,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>📚 Min læseliste</Text>
+      <Text style={styles.header}>Min læseliste</Text>
 
       {books.length === 0 ? (
         <View style={styles.empty}>
@@ -581,7 +588,10 @@ export default function HomeScreen({ navigation }) {
     </View>
   );
 }
+```
 
+Opdater stylingen
+```
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB', padding: 10 },
   header: { fontSize: 28, fontWeight: 'bold', marginVertical: 20, textAlign: 'center', color: '#333' },
@@ -629,7 +639,9 @@ const fabStyles = StyleSheet.create({
 
 ### Sharing.js
 
-Importer følgende 
+Til at dele bøgerne bruger vi Expo sharing, du kan læse mere om det her: https://docs.expo.dev/versions/latest/sdk/sharing/
+
+Indsæt dette i sharing: 
 ```
 import React from 'react';
 import { View, Image, Text, TouchableOpacity, StyleSheet, Alert, Share } from 'react-native';
@@ -667,8 +679,11 @@ export default function BookCard({ item, index }) {
     </Animated.View>
   );
 }
+```
 
-const styles = StyleSheet.create({
+Indsæt stylingen i en seperat fil
+```
+const ??? = StyleSheet.create({
   card: {
     flex: 1,
     margin: 8,
