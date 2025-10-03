@@ -47,14 +47,19 @@ npx expo customize babel.config.js
 ```
 
 Opret dine mapper med de nødvendige filer 
-- components
-  - Library.js
-  - Notifications.js
-  - Sharing.js
-- screens
-  - CameraScreen.js
-  - HomeScreen.js
-- style
+```
+components/
+  Library.js
+  Notifications.js
+  Sharing.js
+
+screens/
+  CameraScreen.js
+  HomeScreen.js
+
+style/
+  (indsæt dine styling-filer her)
+```
 
 ## App.js
 
